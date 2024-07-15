@@ -32,7 +32,8 @@ import matplotlib.pyplot as plt
 from cv2 import FONT_HERSHEY_SIMPLEX, putText, resize, INTER_CUBIC, INTER_LINEAR
 from numpy import zeros, full, empty, float32, newaxis, arange, count_nonzero, \
     sqrt, uint16, clip, minimum, mean
-from skimage import img_as_uint, img_as_ubyte
+# The following methods were moved from skimage to skimage.util.
+from skimage.util import img_as_uint, img_as_ubyte
 
 from align_frames import AlignFrames
 from alignment_points import AlignmentPoints

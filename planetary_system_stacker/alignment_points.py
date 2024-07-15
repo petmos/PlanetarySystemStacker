@@ -224,7 +224,10 @@ class AlignmentPoints(object):
 
                         # Compute the center of mass of the brightness distribution within the box,
                         # and shift the box center to this location.
-                        com = ndimage.measurements.center_of_mass(box)
+                        # Please note that the "center_of_mass" method was moved within the ndimage
+                        # package.
+                        # com = ndimage.measurements.center_of_mass(box)
+                        com = ndimage.center_of_mass(box)
                         y_adapted = y + int(com[0]) - half_box_width
                         x_adapted = x + int(com[1]) - half_box_width
 
