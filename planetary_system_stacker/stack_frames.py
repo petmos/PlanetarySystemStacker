@@ -28,12 +28,12 @@ from warnings import filterwarnings
 import cProfile as profile
 import pstats
 
-
 import matplotlib
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from cv2 import FONT_HERSHEY_SIMPLEX, putText, resize, INTER_CUBIC, INTER_LINEAR, \
-                 waitKey, destroyAllWindows, imshow
+    waitKey, destroyAllWindows, imshow
 from numpy import zeros, full, empty, float32, newaxis, arange, count_nonzero, \
     sqrt, uint16, clip, minimum, mean
 # The following methods were moved from skimage to skimage.util.
@@ -113,7 +113,7 @@ class StackFrames(object):
         # Allocate AP stacking buffers and compute drizzled patch index bounds.
         for ap in self.alignment_points.alignment_points:
             AlignmentPoints.initialize_ap_stacking_buffer(ap, self.configuration.drizzle_factor,
-                                             self.frames.color)
+                                                          self.frames.color)
 
         # The summation buffer needs to accommodate three color channels in the case of color
         # images. The size is extended if drizzling is active. In this case also allocate a buffer
@@ -123,13 +123,13 @@ class StackFrames(object):
                                               dtype=float32)
             if self.drizzle:
                 self.frame_drizzled = zeros([self.dim_y_drizzled, self.dim_x_drizzled, 3],
-                                                  dtype=float32)
+                                            dtype=float32)
         else:
             self.stacked_image_buffer = zeros([self.dim_y_drizzled, self.dim_x_drizzled],
                                               dtype=float32)
             if self.drizzle:
                 self.frame_drizzled = zeros([self.dim_y_drizzled, self.dim_x_drizzled],
-                                                  dtype=float32)
+                                            dtype=float32)
 
         # If the alignment point patches do not cover the entire frame, a background image must
         # be computed and blended in. At this point it is not yet clear if this is necessary.
@@ -190,16 +190,18 @@ class StackFrames(object):
             # Compute the weights used in AP blending and store them with the AP.
             alignment_point['weights_yx'] = minimum(self.one_dim_weight(patch_y_low_drizzled,
                                                                         patch_y_high_drizzled,
-                                                                        alignment_point['y_drizzled'],
+                                                                        alignment_point[
+                                                                            'y_drizzled'],
                                                                         extend_low=extend_low_y,
                                                                         extend_high=extend_high_y)[
-                                                                                    :, newaxis],
+                                                    :, newaxis],
                                                     self.one_dim_weight(patch_x_low_drizzled,
                                                                         patch_x_high_drizzled,
-                                                                        alignment_point['x_drizzled'],
+                                                                        alignment_point[
+                                                                            'x_drizzled'],
                                                                         extend_low=extend_low_x,
                                                                         extend_high=extend_high_x)[
-                                                                                    newaxis, :])
+                                                    newaxis, :])
 
             # This is an alternative where the weights decrease more rapidly towards the corners.
             # alignment_point['weights_yx'] = self.one_dim_weight(patch_y_low, patch_y_high,
@@ -236,13 +238,13 @@ class StackFrames(object):
 
         # Compute the number of points where the background image will be used in patch blending.
         points_where_background_used = count_nonzero(self.sum_single_frame_weights <
-                                     self.configuration.stack_frames_background_blend_threshold *
-                                     single_stack_size_float)
+                                                     self.configuration.stack_frames_background_blend_threshold *
+                                                     single_stack_size_float)
 
         # If the fraction is below a certain limit, it is worthwhile to compute the background
         # image only where it is needed. Construct a list with patches where the background is
         # needed.
-        if points_where_background_used/self.number_pixels_drizzled < \
+        if points_where_background_used / self.number_pixels_drizzled < \
                 self.configuration.stack_frames_background_fraction:
 
             # Initialize a list of background patches.
@@ -357,8 +359,8 @@ class StackFrames(object):
             # Change the current frame into float32. If drizzle is active, also interpolate values.
             if self.drizzle:
                 self.frame_drizzled = resize(frame,
-                                             (frame.shape[1]*self.configuration.drizzle_factor,
-                                              frame.shape[0]*self.configuration.drizzle_factor),
+                                             (frame.shape[1] * self.configuration.drizzle_factor,
+                                              frame.shape[0] * self.configuration.drizzle_factor),
                                              interpolation=INTER_LINEAR)
             else:
                 self.frame_drizzled = frame
@@ -398,7 +400,8 @@ class StackFrames(object):
                 # Increment the counter corresponding to the 2D warp shift. Increase the resolution
                 # according to the drizzle factor.
                 if success:
-                    self.shift_distribution[int(round(sqrt(shift_y_drizzled ** 2 + shift_x_drizzled ** 2)))] += 1
+                    self.shift_distribution[
+                        int(round(sqrt(shift_y_drizzled ** 2 + shift_x_drizzled ** 2)))] += 1
                 else:
                     self.shift_failure_counter += 1
 
@@ -416,14 +419,16 @@ class StackFrames(object):
                     y_high = alignment_point['patch_y_high']
                     x_low = alignment_point['patch_x_low']
                     x_high = alignment_point['patch_x_high']
-                    reference_patch = (self.alignment_points.mean_frame[y_low:y_high, x_low:x_high]).astype(uint16)
+                    reference_patch = (
+                    self.alignment_points.mean_frame[y_low:y_high, x_low:x_high]).astype(uint16)
                     reference_patch = resize(reference_patch, None,
-                                              fx=float(self.scale_factor),
-                                              fy=float(self.scale_factor))
+                                             fx=float(self.scale_factor),
+                                             fy=float(self.scale_factor))
 
                     try:
                         # Cut out the globally stabilized and the de-warped patches
-                        frame_stabilized = frame_mono_blurred[y_low+dy:y_high+dy, x_low+dx:x_high+dx]
+                        frame_stabilized = frame_mono_blurred[y_low + dy:y_high + dy,
+                                           x_low + dx:x_high + dx]
                         frame_stabilized = resize(frame_stabilized, None,
                                                   fx=float(self.scale_factor),
                                                   fy=float(self.scale_factor))
@@ -434,18 +439,21 @@ class StackFrames(object):
                         putText(frame_stabilized, 'stabilized: ' + str(dy) + ', ' + str(dx),
                                 (5, 25), font, fontScale, fontColor, lineType)
 
-                        frame_dewarped = frame_mono_blurred[y_low+total_shift_y_int:y_high+total_shift_y_int,
-                                         x_low+total_shift_x_int:x_high+total_shift_x_int]
+                        frame_dewarped = frame_mono_blurred[
+                                         y_low + total_shift_y_int:y_high + total_shift_y_int,
+                                         x_low + total_shift_x_int:x_high + total_shift_x_int]
                         frame_dewarped = resize(frame_dewarped, None,
-                                                  fx=float(self.scale_factor),
-                                                  fy=float(self.scale_factor))
+                                                fx=float(self.scale_factor),
+                                                fy=float(self.scale_factor))
                         putText(frame_dewarped, 'de-warped: ' + str(int(round(shift_y))) + ', ' +
-                                str(int(round(shift_x))), (5, 25), font, fontScale, fontColor, lineType)
+                                str(int(round(shift_x))), (5, 25), font, fontScale, fontColor,
+                                lineType)
                         # Compose the three patches into a single image and send it to the
                         # visualization window.
                         composed_image = Miscellaneous.compose_image([frame_stabilized,
-                                            reference_patch, frame_dewarped],
-                                            border=self.border)
+                                                                      reference_patch,
+                                                                      frame_dewarped],
+                                                                     border=self.border)
                         self.update_image_window_signal.emit(composed_image)
                     except Exception as e:
                         print(str(e))
@@ -468,16 +476,16 @@ class StackFrames(object):
             # averaged background image.
             if self.number_stacking_holes > 0 and \
                     frame_index in self.rank_frames.quality_sorted_indices[
-                        :self.alignment_points.stack_size]:
+                                   :self.alignment_points.stack_size]:
                 self.my_timer.start('Stacking: computing background')
 
                 # Treat the case that the background is computed for specific patches only.
                 if self.background_patches:
                     for patch in self.background_patches:
                         self.averaged_background[patch['patch_y_low']:patch['patch_y_high'],
-                                  patch['patch_x_low']:patch['patch_x_high']] += \
-                            frame[patch['patch_y_low'] + dy : patch['patch_y_high'] + dy,
-                                  patch['patch_x_low'] + dx : patch['patch_x_high'] + dx]
+                        patch['patch_x_low']:patch['patch_x_high']] += \
+                            frame[patch['patch_y_low'] + dy: patch['patch_y_high'] + dy,
+                            patch['patch_x_low'] + dx: patch['patch_x_high'] + dx]
 
                 # The complete background image is computed.
                 else:
@@ -547,7 +555,7 @@ class StackFrames(object):
         if y_low_source < 0:
             y_low_target = -y_low_source
             y_low_source = 0
-            self.border_y_low =  max(self.border_y_low, y_low_target)
+            self.border_y_low = max(self.border_y_low, y_low_target)
         if y_high_source > frame_size_y:
             self.border_y_high = max(self.border_y_high, y_high_source - frame_size_y)
             y_high_source = frame_size_y
@@ -597,11 +605,12 @@ class StackFrames(object):
             if self.frames.color:
                 self.stacked_image_buffer[patch_y_low_drizzled:patch_y_high_drizzled,
                 patch_x_low_drizzled: patch_x_high_drizzled, :] += \
-                    alignment_point['stacking_buffer'] * alignment_point['weights_yx'][:, :, newaxis]
+                    alignment_point['stacking_buffer'] * alignment_point['weights_yx'][:, :,
+                                                         newaxis]
             else:
                 self.stacked_image_buffer[patch_y_low_drizzled:patch_y_high_drizzled,
                 patch_x_low_drizzled: patch_x_high_drizzled] += alignment_point['stacking_buffer'] * \
-                                              alignment_point['weights_yx']
+                                                                alignment_point['weights_yx']
 
         # Divide the global stacking buffer pixel-wise by the number of image contributions. Please
         # note that there is no division by zero because the array "sum_single_frame_weights" was
@@ -625,17 +634,17 @@ class StackFrames(object):
             # weights have to be divided by the stack size first, to normalize them to 1. at patch
             # centers.
             foreground_weight = self.sum_single_frame_weights / \
-                                     (self.configuration.stack_frames_background_blend_threshold *
-                                      self.alignment_points.stack_size)
+                                (self.configuration.stack_frames_background_blend_threshold *
+                                 self.alignment_points.stack_size)
             clip(foreground_weight, 0., 1., out=foreground_weight)
 
             # Blend the AP buffer with the background.
             if self.frames.color:
-                self.stacked_image_buffer = (self.stacked_image_buffer-self.averaged_background) * \
+                self.stacked_image_buffer = (self.stacked_image_buffer - self.averaged_background) * \
                                             foreground_weight[:, :, newaxis] + \
                                             self.averaged_background
             else:
-                self.stacked_image_buffer = (self.stacked_image_buffer-self.averaged_background) * \
+                self.stacked_image_buffer = (self.stacked_image_buffer - self.averaged_background) * \
                                             foreground_weight + self.averaged_background
 
             self.my_timer.stop('Stacking: blending APs with background')
@@ -667,7 +676,7 @@ class StackFrames(object):
         """
 
         self.stacked_image = resize(self.stacked_image, None,
-                                           fx=float(0.5), fy=float(0.5))
+                                    fx=float(0.5), fy=float(0.5))
 
     @staticmethod
     def one_dim_weight(patch_low, patch_high, box_center, extend_low=False, extend_high=False):
@@ -709,7 +718,7 @@ class StackFrames(object):
             weights[center_offset:patch_high_offset] = 1.
         else:
             weights[center_offset:patch_high_offset] = arange(patch_high - box_center, 0,
-                                                                 -1) / float32(
+                                                              -1) / float32(
                 patch_high - box_center)
 
         return weights
@@ -724,19 +733,21 @@ class StackFrames(object):
 
         # Find the last non-zero entry in the array.
         if max(self.shift_distribution) > 0:
-            max_index = [index for index, item in enumerate(self.shift_distribution) if item != 0][-1] \
+            max_index = [index for index, item in enumerate(self.shift_distribution) if item != 0][
+                            -1] \
                         + 1
 
             # Initialize the three table lines.
-            s =    "           Shift (pixels):"
+            s = "           Shift (pixels):"
             line = "           ---------------"
-            t =    "           Percent:       "
+            t = "           Percent:       "
 
             # Extend the three table lines up to the max index.
             for index in range(max_index):
                 s += "|{:7d} ".format(index)
                 line += "---------"
-                t += "|{:7.3f} ".format(100.*self.shift_distribution[index]/self.shift_entries_total)
+                t += "|{:7.3f} ".format(
+                    100. * self.shift_distribution[index] / self.shift_entries_total)
 
             # Finish the three table lines.
             s += "|"
@@ -745,8 +756,8 @@ class StackFrames(object):
 
             # Return the lines to be printed to the protocol.
             return s + "\n" + line + "\n" + t + "\n\n" + \
-                   "           Failed shift measurements: {:7.3f} %".format(
-                       self.shift_failure_percent)
+                "           Failed shift measurements: {:7.3f} %".format(
+                    self.shift_failure_percent)
         else:
             return ""
 
@@ -759,11 +770,12 @@ if __name__ == "__main__":
     # the example for the test run.
     type = 'video'
     if type == 'image':
-        names = glob('Images/2012*.tif')
+        names = glob(
+            r'D:\SW-Development\Python\PlanetarySystemStacker\planetary_system_stacker\Images/2012*.tif')
         # names = glob.glob('Images/Moon_Tile-031*ap85_8b.tif')
         # names = glob.glob('Images/Example-3*.jpg')
     else:
-        names = 'Videos/short_video.avi'
+        names = r'D:\SW-Development\Python\PlanetarySystemStacker\planetary_system_stacker\Videos/short_video.avi'
     print(names)
 
     # Choose if AP grid and stacked image are to be visualized.
@@ -816,7 +828,8 @@ if __name__ == "__main__":
         x_low_opt:x_high_opt] = reference_frame_with_alignment_points[y_high_opt - 1,
                                 x_low_opt:x_high_opt] = 255
         reference_frame_with_alignment_points[y_low_opt:y_high_opt,
-        x_low_opt] = reference_frame_with_alignment_points[y_low_opt:y_high_opt, x_high_opt - 1] = 255
+        x_low_opt] = reference_frame_with_alignment_points[y_low_opt:y_high_opt,
+                     x_high_opt - 1] = 255
         # plt.imshow(reference_frame_with_alignment_points, cmap='Greys_r')
         # plt.show()
 
@@ -858,7 +871,7 @@ if __name__ == "__main__":
     print("Number of alignment points created: " + str(len(alignment_points.alignment_points)) +
           ", number of dropped aps (dim): " + str(alignment_points.alignment_points_dropped_dim) +
           ", number of dropped aps (structure): " + str(
-          alignment_points.alignment_points_dropped_structure) + "\n\n")
+        alignment_points.alignment_points_dropped_structure) + "\n\n")
 
     if visualize:
         color_image = alignment_points.show_alignment_points(average)
@@ -871,7 +884,8 @@ if __name__ == "__main__":
     my_timer.stop('Rank frames at alignment points')
 
     # Allocate StackFrames object.
-    stack_frames = StackFrames(configuration, frames, rank_frames, align_frames, alignment_points, my_timer)
+    stack_frames = StackFrames(configuration, frames, rank_frames, align_frames, alignment_points,
+                               my_timer)
 
     # Stack all frames.
     stack_frames.stack_frames()
@@ -885,8 +899,10 @@ if __name__ == "__main__":
         stack_frames.half_stacked_image_buffer_resolution()
 
     # Save the stacked image as 16bit int (color or mono).
-    Frames.save_image('Images/example_stacked.tiff', stacked_image, color=frames.color,
-                      header=configuration.global_parameters_version)
+    Frames.save_image(
+        r'D:\SW-Development\Python\PlanetarySystemStacker\planetary_system_stacker\Images\example_stacked.tiff',
+        stacked_image, color=frames.color,
+        header=configuration.global_parameters_version)
 
     if visualize:
         # Convert to 8bit and show in Window.
