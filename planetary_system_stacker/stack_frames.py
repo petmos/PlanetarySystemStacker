@@ -25,11 +25,15 @@ from math import ceil
 from statistics import median
 from time import sleep
 from warnings import filterwarnings
+import cProfile as profile
+import pstats
+
 
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from cv2 import FONT_HERSHEY_SIMPLEX, putText, resize, INTER_CUBIC, INTER_LINEAR
+from cv2 import FONT_HERSHEY_SIMPLEX, putText, resize, INTER_CUBIC, INTER_LINEAR, \
+                 waitKey, destroyAllWindows, imshow
 from numpy import zeros, full, empty, float32, newaxis, arange, count_nonzero, \
     sqrt, uint16, clip, minimum, mean
 # The following methods were moved from skimage to skimage.util.
@@ -335,24 +339,29 @@ class StackFrames(object):
         # Initialize widths of border areas where artifacts occur because not all patches contribute.
         self.border_y_low = self.border_y_high = self.border_x_low = self.border_x_high = 0
 
+        # Start performance profiling.
+        prof = profile.Profile()
+        prof.enable()
+
         # Go through the list of all frames.
         for frame_index in range(self.frames.number):
 
             # If brightness normalization is switched on, change the brightness of this frame to
             # the median of all frames.
             if self.configuration.frames_normalization:
-                frame = self.frames.frames(frame_index) * median_brightness / \
+                frame = self.frames.frames(frame_index).astype(float32) * median_brightness / \
                         (self.frames.average_brightness(frame_index) + 1.e-7)
             else:
-                frame = self.frames.frames(frame_index)
+                frame = self.frames.frames(frame_index).astype(float32)
 
             # Change the current frame into float32. If drizzle is active, also interpolate values.
             if self.drizzle:
-                self.frame_drizzled = resize(frame.astype(float32),
-                                             (frame.shape[1]*self.configuration.drizzle_factor, frame.shape[0]*self.configuration.drizzle_factor),
+                self.frame_drizzled = resize(frame,
+                                             (frame.shape[1]*self.configuration.drizzle_factor,
+                                              frame.shape[0]*self.configuration.drizzle_factor),
                                              interpolation=INTER_LINEAR)
             else:
-                self.frame_drizzled = frame.astype(float32)
+                self.frame_drizzled = frame
 
             frame_mono_blurred = self.frames.frames_mono_blurred(frame_index)
 
@@ -474,6 +483,11 @@ class StackFrames(object):
                 else:
                     self.averaged_background += frame[dy:self.dim_y + dy, dx:self.dim_x + dx]
                 self.my_timer.stop('Stacking: computing background')
+
+        # Stop performance profiling and print statistics.
+        prof.disable()
+        stats = pstats.Stats(prof).strip_dirs().sort_stats("tottime")
+        stats.print_stats()
 
         if self.progress_signal is not None:
             self.progress_signal.emit("Stack frames", 100)
@@ -749,8 +763,11 @@ if __name__ == "__main__":
         # names = glob.glob('Images/Moon_Tile-031*ap85_8b.tif')
         # names = glob.glob('Images/Example-3*.jpg')
     else:
-        names = 'Videos/another_short_video.avi'
+        names = 'Videos/short_video.avi'
     print(names)
+
+    # Choose if AP grid and stacked image are to be visualized.
+    visualize = False
 
     my_timer.create('Execution over all')
 
@@ -841,11 +858,12 @@ if __name__ == "__main__":
     print("Number of alignment points created: " + str(len(alignment_points.alignment_points)) +
           ", number of dropped aps (dim): " + str(alignment_points.alignment_points_dropped_dim) +
           ", number of dropped aps (structure): " + str(
-          alignment_points.alignment_points_dropped_structure))
+          alignment_points.alignment_points_dropped_structure) + "\n\n")
 
-    # color_image = alignment_points.show_alignment_points(average)
-    # plt.imshow(color_image)
-    # plt.show()
+    if visualize:
+        color_image = alignment_points.show_alignment_points(average)
+        imshow("image with alignment points", color_image)
+        waitKey(0)
 
     # For each alignment point rank frames by their quality.
     my_timer.create('Rank frames at alignment points')
@@ -870,9 +888,11 @@ if __name__ == "__main__":
     Frames.save_image('Images/example_stacked.tiff', stacked_image, color=frames.color,
                       header=configuration.global_parameters_version)
 
-    # Convert to 8bit and show in Window.
-    plt.imshow(img_as_ubyte(stacked_image))
-    plt.show()
+    if visualize:
+        # Convert to 8bit and show in Window.
+        imshow("stacked image", img_as_ubyte(stacked_image))
+        waitKey(0)
+        destroyAllWindows()
 
     # Print out timer results.
     my_timer.stop('Execution over all')
