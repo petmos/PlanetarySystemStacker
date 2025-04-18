@@ -29,8 +29,8 @@ from glob import glob
 from sys import argv, exit
 from time import sleep
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import Qt
+from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6.QtCore import Qt
 
 from configuration import Configuration
 from exceptions import Error
@@ -140,7 +140,7 @@ class FrameSelectorWidget(QtWidgets.QFrame, Ui_frame_selector):
 
         # Initialize the list widget.
         self.fill_list_widget()
-        self.listWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.listWidget.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection)
         self.listWidget.installEventFilter(self)
         self.listWidget.itemClicked.connect(self.select_items)
         self.listWidget.currentRowChanged.connect(self.synchronize_slider)
@@ -248,10 +248,10 @@ class FrameSelectorWidget(QtWidgets.QFrame, Ui_frame_selector):
         # Set the list widget to the current position.
         if self.frame_ordering == "quality":
             self.listWidget.setCurrentRow(self.quality_index,
-                                          QtCore.QItemSelectionModel.SelectCurrent)
+                                          QtCore.QItemSelectionModel.SelectionFlag.Current)
         else:
             self.listWidget.setCurrentRow(self.frame_index,
-                                          QtCore.QItemSelectionModel.SelectCurrent)
+                                          QtCore.QItemSelectionModel.SelectionFlag.Current)
 
     def select_items(self):
         """
@@ -317,7 +317,7 @@ class FrameSelectorWidget(QtWidgets.QFrame, Ui_frame_selector):
 
             # Open a context menu with two choices. Depending on the user's choice, either
             # trigger the "use_triggered" or "not_use_triggered" method below.
-            if event.type() == QtCore.QEvent.ContextMenu:
+            if event.type() == QtCore.QEvent.Type.ContextMenu:
                 menu = QtWidgets.QMenu()
                 action1 = QtWidgets.QAction('Use for stacking', menu)
                 action1.triggered.connect(self.use_triggered)
@@ -328,12 +328,12 @@ class FrameSelectorWidget(QtWidgets.QFrame, Ui_frame_selector):
                 menu.exec_(event.globalPos())
 
             # Do the same as above if the user prefers to use the keyboard keys "+" or "-".
-            elif event.type() == QtCore.QEvent.KeyPress:
-                if event.key() == Qt.Key_Plus:
+            elif event.type() == QtCore.QEvent.Type.KeyPress:
+                if event.key() == Qt.Key.Key_Plus:
                     self.use_triggered()
-                elif event.key() == Qt.Key_Minus:
+                elif event.key() == Qt.Key.Key_Minus:
                     self.not_use_triggered()
-                elif event.key() == Qt.Key_Escape:
+                elif event.key() == Qt.Key.Key_Escape:
                     self.items_selected = []
                     self.indices_selected = []
                     self.listWidget.clearSelection()
@@ -400,7 +400,7 @@ class FrameSelectorWidget(QtWidgets.QFrame, Ui_frame_selector):
 
         # Adjust the frame list and select the current frame.
 
-        self.listWidget.setCurrentRow(index, QtCore.QItemSelectionModel.SelectCurrent)
+        self.listWidget.setCurrentRow(index, QtCore.QItemSelectionModel.SelectionFlag.Current)
 
         # Update the image in the viewer.
         self.frame_selector.setPhoto(self.frame_index)

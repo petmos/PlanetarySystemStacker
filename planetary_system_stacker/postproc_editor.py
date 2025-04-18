@@ -27,8 +27,8 @@ from sys import argv, stdout, stderr
 from time import sleep
 
 import psutil
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QProxyStyle, QStyle
+from PyQt6 import QtWidgets, QtCore
+from PyQt6.QtWidgets import QProxyStyle, QStyle
 from cv2 import imread, cvtColor, COLOR_BGR2RGB, GaussianBlur, bilateralFilter, BORDER_DEFAULT, \
     COLOR_BGR2HSV, COLOR_HSV2BGR
 from numpy import uint8, uint16, float32
@@ -369,11 +369,11 @@ class CustomStyle(QProxyStyle):
     """
 
     def styleHint(self, hint, option=None, widget=None, returnData=None):
-        if hint == QStyle.SH_SpinBox_KeyPressAutoRepeatRate:
+        if hint == QStyle.StyleHint.SH_SpinBox_KeyPressAutoRepeatRate:
             return 10**6
-        elif hint == QStyle.SH_SpinBox_ClickAutoRepeatRate:
+        elif hint == QStyle.StyleHint.SH_SpinBox_ClickAutoRepeatRate:
             return 10**6
-        elif hint == QStyle.SH_SpinBox_ClickAutoRepeatThreshold:
+        elif hint == QStyle.StyleHint.SH_SpinBox_ClickAutoRepeatThreshold:
             # You can use only this condition to avoid the auto-repeat,
             # but better safe than sorry ;-)
             return 10**6
@@ -565,11 +565,10 @@ class VersionManagerWidget(QtWidgets.QWidget, Ui_version_manager_widget):
         :return: -
         """
 
-        options = QtWidgets.QFileDialog.Options()
         filename, extension = QtWidgets.QFileDialog.getSaveFileName(self,
                             "Save result as 16bit png, tiff or fits image",
                             self.postproc_data_object.file_name_processed,
-                            "Image Files (*.png *.tiff *.fits)", options=options)
+                            "Image Files (*.png *.tiff *.fits)")
 
         if filename and extension:
             self.postproc_data_object.finalize_postproc_version()
@@ -1335,8 +1334,8 @@ class PostprocEditorWidget(QtWidgets.QFrame, Ui_postproc_editor):
 
         # Initialize a vertical spacer used to fill the lower part of the sharpening widget scroll
         # area.
-        self.spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum,
-                                            QtWidgets.QSizePolicy.Expanding)
+        self.spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum,
+                                            QtWidgets.QSizePolicy.Policy.Expanding)
 
         # Set the resolution index to an impossible value. It is used to check for changes.
         self.rgb_resolution_index = -1
@@ -1427,7 +1426,7 @@ class PostprocEditorWidget(QtWidgets.QFrame, Ui_postproc_editor):
 
         self.version_manager_widget.setEnabled(False)
         self.tabWidget_postproc_control.setEnabled(False)
-        self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(False)
+        self.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).setEnabled(False)
 
     def enable_widgets(self):
         """
@@ -1438,7 +1437,7 @@ class PostprocEditorWidget(QtWidgets.QFrame, Ui_postproc_editor):
 
         self.version_manager_widget.setEnabled(True)
         self.tabWidget_postproc_control.setEnabled(True)
-        self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(True)
+        self.buttonBox.button(QtWidgets.QDialogButtonBox.StandardButton.Ok).setEnabled(True)
 
     def fgw_changed(self, value):
         """
@@ -1484,7 +1483,7 @@ class PostprocEditorWidget(QtWidgets.QFrame, Ui_postproc_editor):
             self.finish_rgb_correction_mode()
 
     def rgb_automatic_changed(self, state):
-        rgb_on = state == QtCore.Qt.Checked
+        rgb_on = state == QtCore.Qt.CheckState.Checked
         version = self.postproc_data_object.versions[
             self.postproc_data_object.version_selected]
         version.rgb_automatic = rgb_on

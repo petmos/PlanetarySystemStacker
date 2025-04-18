@@ -22,8 +22,8 @@ along with PSS.  If not, see <http://www.gnu.org/licenses/>.
 
 from sys import argv
 
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt
+from PyQt6 import QtWidgets
+from PyQt6.QtCore import Qt
 
 from configuration import Configuration
 from quickstart_gui import Ui_Form
@@ -43,7 +43,7 @@ class DisplayQuickstart(QtWidgets.QWidget, Ui_Form):
 
         # Get the quickstart guide text from a markdown document. The original text is in file
         # "quickstart.md".
-        self.label.setTextFormat(Qt.MarkdownText)
+        self.label.setTextFormat(Qt.TextFormat.MarkdownText)
         markdown_text = """
 ### Quickstart Guide
 

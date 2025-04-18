@@ -20,7 +20,7 @@ setuptools.setup(
         'numpy',
         'matplotlib',
         'psutil',
-        'PyQt5 >= 5.15',
+        'PyQt6 >= 6.2',
         'scipy',
         'astropy',
         'scikit-image',
